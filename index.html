@@ -2,123 +2,44 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>شطرنج - Chess Pro</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>شطرنج برو</title>
 <style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI', Tahoma, sans-serif}
-body{background:#302e2b;color:white;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px}
-h1{margin-bottom:10px;color:#81b64c}
-#info{margin:10px;font-weight:bold;color:#81b64c;font-size:18px}
-#board{display:grid;grid-template-columns:repeat(8, 1fr);width:90vw;max-width:480px;aspect-ratio:1/1;border:4px solid #262421;border-radius:8px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,.5)}
-.square{width:100%;aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;font-size:36px;cursor:pointer;user-select:none;position:relative}
-.white{background:#eeeed2}
-.black{background:#769656}
-.selected{background:#f6f669 !important}
-.check{background:#ff6b6b !important}
-.valid::after{content:'';width:22%;height:22%;background:rgba(0,0,0,.25);border-radius:50%;position:absolute}
-.pW{color:white;text-shadow:0 0 2px black, 0 0 4px black}
-.pB{color:black;text-shadow:0 0 1px white}
-#popup{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:100}
-#popup.show{display:flex}
-#popupBox{background:white;color:#333;padding:30px 40px;border-radius:16px;text-align:center;min-width:280px;box-shadow:0 20px 40px rgba(0,0,0,.4)}
-#popupBox h2{color:#81b64c;margin-bottom:10px;font-size:28px}
-#popupBox p{margin-bottom:20px;font-size:18px}
-.btn{border:none;padding:12px 20px;border-radius:8px;font-size:16px;font-weight:bold;cursor:pointer;margin:5px}
-.btn-green{background:#81b64c;color:white}
-.btn-gray{background:#e0e0e0;color:#555}
-#controls{margin-top:15px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#161512;color:#fff;font-family:system-ui;display:flex;flex-direction:column;align-items:center;padding:12px}
+h1{color:#81b64c;margin:10px;font-size:26px}
+#board{width:94vw;max-width:400px;aspect-ratio:1;display:grid;grid-template-columns:repeat(8,1fr);border:3px solid #3a3a3a;border-radius:6px;overflow:hidden}
+.sq{display:flex;align-items:center;justify-content:center;font-size:30px;cursor:pointer;position:relative}
+.light{background:#f0d9b5}.dark{background:#769656}
+.sel{background:#f6f669 !important}
+.hint::after{content:'';width:18px;height:18px;background:rgba(0,0,0,.35);border-radius:50%;position:absolute}
+.cap::after{content:'';width:90%;height:90%;border:4px solid rgba(0,0,0,.35);border-radius:50%;position:absolute}
+button{background:#81b64c;color:#000;border:none;padding:10px 18px;border-radius:8px;font-weight:bold;margin:5px}
 </style>
 </head>
 <body>
-<h1>♔ شطرنج برو</h1>
-<div id="info">الدور: الأبيض</div>
+<h1>♔ شطرنج برو - ضد البوت</h1>
 <div id="board"></div>
-<div id="controls"><button class="btn btn-gray" onclick="initGame()">🔄 لعبة جديدة</button></div>
-<div id="popup"><div id="popupBox"><h2 id="popupTitle">إربحتي! 🎉 🏆</h2><p id="popupMsg">الأسود مات - الأبيض ربح!</p><button class="btn btn-green" onclick="initGame()">🔄 عاود تلعب</button><button class="btn btn-gray" onclick="closePopup()">إغلاق</button></div></div>
+<div id="msg" style="margin:10px;color:#81b64c;font-weight:bold;height:20px"></div>
+<div>
+<button onclick="newGame()">جديدة</button>
+<button onclick="undo()" style="background:#3a3a3a;color:#fff">تراجع</button>
+<button onclick="toggleBot()" id="botBtn" style="background:#3a3a3a;color:#fff">البوت: شغال</button>
+</div>
 <script>
-let board, turn='w', selected=null, legalMoves=[], castling, kingPos, gameOver=false;
-const symbols={wK:'♔',wQ:'♕',wR:'♖',wB:'♗',wN:'♘',wP:'♙',bK:'♚',bQ:'♛',bR:'♜',bB:'♝',bN:'♞',bP:'♟'};
-function initGame(){
- board=[['bR','bN','bB','bQ','bK','bB','bN','bR'],['bP','bP','bP','bP','bP','bP','bP','bP'],['','','','','','','',''],['','','','','','','',''],['','','','','','','',''],['','','','','','','',''],['wP','wP','wP','wP','wP','wP','wP','wP'],['wR','wN','wB','wQ','wK','wB','wN','wR']];
- turn='w'; selected=null; legalMoves=[]; castling={wK:true,wQ:true,bK:true,bQ:true}; kingPos={w:[7,4],b:[0,4]}; gameOver=false; closePopup(); draw();
-}
-function draw(){
- const bEl=document.getElementById('board'); bEl.innerHTML='';
- document.getElementById('info').innerText=gameOver?'انتهت اللعبة':(turn==='w'?'الدور: الأبيض':'الدور: الأسود');
- for(let r=0;r<8;r++){for(let c=0;c<8;c++){
-  const sq=document.createElement('div'); sq.className='square '+((r+c)%2==0?'white':'black');
-  const piece=board[r][c];
-  if(piece){
-   const span=document.createElement('span'); span.innerText=symbols[piece]; span.className=piece[0]==='w'?'pW':'pB'; sq.appendChild(span);
-  }
-  if(selected && selected[0]==r && selected[1]==c) sq.classList.add('selected');
-  if(legalMoves.some(m=>m[0]==r&&m[1]==c)) sq.classList.add('valid');
-  if(piece && ((piece==='wK'&&kingPos.w[0]==r&&kingPos.w[1]==c)||(piece==='bK'&&kingPos.b[0]==r&&kingPos.b[1]==c))){
-   if(isKingInCheck(piece[0])) sq.classList.add('check');
-  }
-  sq.onclick=()=>onClick(r,c); bEl.appendChild(sq);
- }}
-}
-function onClick(r,c){
- if(gameOver) return;
- const piece=board[r][c];
- if(selected){
-  if(legalMoves.some(m=>m[0]==r&&m[1]==c)){movePiece(selected[0],selected[1],r,c); return;}
-  selected=null; legalMoves=[]; draw();
-  if(piece && piece[0]==turn){selected=[r,c]; legalMoves=getAllLegalMovesFor(r,c); draw();}
- } else {
-  if(piece && piece[0]==turn){selected=[r,c]; legalMoves=getAllLegalMovesFor(r,c); draw();}
- }
-}
-function movePiece(r1,c1,r2,c2){
- let p=board[r1][c1];
- if(p[1]=='K' && Math.abs(c2-c1)==2){
-  if(c2==6){board[r2][5]=board[r2][7]; board[r2][7]='';}
-  else {board[r2][3]=board[r2][0]; board[r2][0]='';}
- }
- if(p[1]=='P' && (r2==0||r2==7)) p=p[0]+'Q';
- board[r2][c2]=p; board[r1][c1]='';
- if(p[1]=='K'){kingPos[p[0]]=[r2,c2]; castling[p[0]+'K']=false; castling[p[0]+'Q']=false;}
- if(p[1]=='R'){if(c1==0) castling[p[0]+'Q']=false; if(c1==7) castling[p[0]+'K']=false;}
- selected=null; legalMoves=[];
- turn=turn=='w'?'b':'w';
- const legal=getAllLegalMoves(turn);
- const inCheck=isKingInCheck(turn);
- if(legal.length==0){
-  if(inCheck){showPopup(turn=='w'?'الأسود ربح!':'الأبيض ربح!', turn=='w'?'الأبيض مات - الأسود ربح':'الأسود مات - الأبيض ربح!');}
-  else {showPopup('تعادل!','ستيل ميت - ما كاين حتى حركة');}
-  gameOver=true;
- }
- draw();
-}
-function getAllLegalMovesFor(r,c){return getPseudoMoves(r,c).filter(([nr,nc])=>{const copy=board.map(row=>[...row]); const kp={w:[...kingPos.w],b:[...kingPos.b]}; const p=copy[r][c]; copy[nr][nc]=p; copy[r][c]=''; if(p[1]=='K') kp[p[0]]=[nr,nc]; return !isKingInCheckOnBoard(turn,kp,copy);});}
-function getAllLegalMoves(color){let moves=[]; for(let r=0;r<8;r++)for(let c=0;c<8;c++)if(board[r][c]&&board[r][c][0]==color)moves.push(...getAllLegalMovesFor(r,c)); return moves;}
-function getPseudoMoves(r,c){
- const p=board[r][c]; if(!p) return []; const color=p[0]; const type=p[1]; let moves=[];
- const dirs={R:[[1,0],[-1,0],[0,1],[0,-1]],B:[[1,1],[1,-1],[-1,1],[-1,-1]],Q:[[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]]};
- if(type=='P'){let dir=color=='w'?-1:1; if(r+dir>=0&&r+dir<8&&!board[r+dir][c]){moves.push([r+dir,c]); if((color=='w'&&r==6||color=='b'&&r==1)&&!board[r+2*dir][c])moves.push([r+2*dir,c]);} for(let dc of [-1,1]){let nr=r+dir,nc=c+dc; if(nr>=0&&nr<8&&nc>=0&&nc<8&&board[nr][nc]&&board[nr][nc][0]!=color)moves.push([nr,nc]);}}
- else if(type=='N'){for(let [dr,dc] of [[2,1],[2,-1],[-2,1],[-2,-1],[1,2],[1,-2],[-1,2],[-1,-2]]){let nr=r+dr,nc=c+dc; if(nr>=0&&nr<8&&nc>=0&&nc<8&&(!board[nr][nc]||board[nr][nc][0]!=color))moves.push([nr,nc]);}}
- else if(type=='K'){for(let [dr,dc] of dirs.Q){let nr=r+dr,nc=c+dc; if(nr>=0&&nr<8&&nc>=0&&nc<8&&(!board[nr][nc]||board[nr][nc][0]!=color))moves.push([nr,nc]);} if(!isKingInCheck(color)){if(castling[color+'K']&&!board[r][5]&&!board[r][6]&&!isSquareAttacked(r,5,color)&&!isSquareAttacked(r,6,color))moves.push([r,6]); if(castling[color+'Q']&&!board[r][1]&&!board[r][2]&&!board[r][3]&&!isSquareAttacked(r,2,color)&&!isSquareAttacked(r,3,color))moves.push([r,2]);}}
- else {let d=type=='R'?dirs.R:type=='B'?dirs.B:dirs.Q; for(let [dr,dc] of d){let nr=r+dr,nc=c+dc; while(nr>=0&&nr<8&&nc>=0&&nc<8){if(!board[nr][nc])moves.push([nr,nc]); else {if(board[nr][nc][0]!=color)moves.push([nr,nc]); break;} nr+=dr; nc+=dc;}}}
- return moves;
-}
-function isKingInCheck(color){return isKingInCheckOnBoard(color,kingPos,board);}
-function isKingInCheckOnBoard(color,kp,b){
- const [kr,kc]=kp[color]; const opp=color=='w'?'b':'w';
- for(let r=0;r<8;r++)for(let c=0;c<8;c++)if(b[r][c]&&b[r][c][0]==opp){let moves=getPseudoMovesTemp(r,c,b); if(moves.some(([mr,mc])=>mr==kr&&mc==kc)) return true;} return false;
-}
-function getPseudoMovesTemp(r,c,b){
- const p=b[r][c]; if(!p) return []; const color=p[0]; const type=p[1]; let moves=[]; const dirs={R:[[1,0],[-1,0],[0,1],[0,-1]],B:[[1,1],[1,-1],[-1,1],[-1,-1]],Q:[[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]]};
- if(type=='P'){let dir=color=='w'?-1:1; for(let dc of [-1,1]){let nr=r+dir,nc=c+dc; if(nr>=0&&nr<8&&nc>=0&&nc<8)moves.push([nr,nc]);}}
- else if(type=='N'){for(let [dr,dc] of [[2,1],[2,-1],[-2,1],[-2,-1],[1,2],[1,-2],[-1,2],[-1,-2]]){let nr=r+dr,nc=c+dc; if(nr>=0&&nr<8&&nc>=0&&nc<8)moves.push([nr,nc]);}}
- else if(type=='K'){for(let [dr,dc] of dirs.Q){let nr=r+dr,nc=c+dc; if(nr>=0&&nr<8&&nc>=0&&nc<8)moves.push([nr,nc]);}}
- else {let d=type=='R'?dirs.R:type=='B'?dirs.B:dirs.Q; for(let [dr,dc] of d){let nr=r+dr,nc=c+dc; while(nr>=0&&nr<8&&nc>=0&&nc<8){moves.push([nr,nc]); if(b[nr][nc]) break; nr+=dr; nc+=dc;}}}
- return moves;
-}
-function isSquareAttacked(r,c,color){const opp=color=='w'?'b':'w'; for(let rr=0;rr<8;rr++)for(let cc=0;cc<8;cc++)if(board[rr][cc]&&board[rr][cc][0]==opp){let moves=getPseudoMovesTemp(rr,cc,board); if(moves.some(([mr,mc])=>mr==r&&mc==c)) return true;} return false;}
-function showPopup(title,msg){document.getElementById('popupTitle').innerText=title; document.getElementById('popupMsg').innerText=msg; document.getElementById('popup').classList.add('show');}
-function closePopup(){document.getElementById('popup').classList.remove('show');}
-initGame();
+const S={'K':'♔','Q':'♕','R':'♖','B':'♗','N':'♘','P':'♙','k':'♚','q':'♛','r':'♜','b':'♝','n':'♞','p':'♟'};
+let B,T='w',sel=null,moves=[],hist=[],botOn=true,thinking=false;
+function init(){B=[['r','n','b','q','k','b','n','r'],['p','p','p','p','p','p','p','p'],['','','','','','','',''],['','','','','','','',''],['','','','','','','',''],['','','','','','','',''],['P','P','P','P','P','P','P','P'],['R','N','B','Q','K','B','N','R']];}
+function render(){const e=document.getElementById('board');e.innerHTML='';for(let r=0;r<8;r++)for(let c=0;c<8;c++){let d=document.createElement('div');d.className='sq '+((r+c)%2==0?'light':'dark');if(sel&&sel.r==r&&sel.c==c)d.classList.add('sel');let mv=moves.find(m=>m.r==r&&m.c==c);if(mv){if(B[r][c]!='')d.classList.add('cap');else d.classList.add('hint');}let p=B[r][c];if(p){d.textContent=S[p];d.style.color=p==p.toUpperCase()?'#fff':'#000';d.style.textShadow=p==p.toUpperCase()?'0 1px 3px #000':'';}d.onclick=()=>clk(r,c);e.appendChild(d);}}
+function clk(r,c){if(thinking)return;let p=B[r][c];let own=p&&((T=='w'&&p==p.toUpperCase())||(T=='b'&&p==p.toLowerCase()));if(own){sel={r,c};moves=getMoves(r,c);render();return;}if(sel&&moves.some(m=>m.r==r&&m.c==c)){doMove(sel.r,sel.c,r,c);}sel=null;moves=[];render();if(botOn&&T=='b')setTimeout(botMove,400);}
+function getMoves(r,c){let p=B[r][c];if(!p)return[];let out=[],white=p==p.toUpperCase(),dir=white?-1:1;function add(nr,nc){if(nr<0||nr>7||nc<0||nc>7)return false;let t=B[nr][nc];if(t==''){out.push({r:nr,c:nc});return true;}let tw=t==t.toUpperCase();if(tw!=white){out.push({r:nr,c:nc});return false;}return false;}let l=p.toLowerCase();if(l=='p'){if(B[r+dir]&&B[r+dir][c]==''){out.push({r:r+dir,c:c});if((white&&r==6||!white&&r==1)&&B[r+dir*2][c]=='')out.push({r:r+dir*2,c:c});}for(let dc of[-1,1]){let nr=r+dir,nc=c+dc;if(nr>=0&&nr<8&&nc>=0&&nc<8){let t=B[nr][nc];if(t&&(t==t.toUpperCase())!=white)out.push({r:nr,c:nc});}}}else{if(l=='r'||l=='q')for(let[dr,dc]of[[1,0],[-1,0],[0,1],[0,-1]])for(let i=1;i<8;i++)if(!add(r+dr*i,c+dc*i))break;if(l=='b'||l=='q')for(let[dr,dc]of[[1,1],[1,-1],[-1,1],[-1,-1]])for(let i=1;i<8;i++)if(!add(r+dr*i,c+dc*i))break;if(l=='n')for(let[dr,dc]of[[2,1],[2,-1],[-2,1],[-2,-1],[1,2],[1,-2],[-1,2],[-1,-2]])add(r+dr,c+dc);if(l=='k')for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++)if(dr||dc)add(r+dr,c+dc);}return out;}
+function doMove(fr,fc,tr,tc){hist.push(JSON.parse(JSON.stringify(B)));B[tr][tc]=B[fr][fc];B[fr][fc]='';if(B[tr][tc].toLowerCase()=='p'&&(tr==0||tr==7))B[tr][tc]=T=='w'?'Q':'q';T=T=='w'?'b':'w';render();checkEnd();}
+function botMove(){if(T!='b')return;thinking=true;document.getElementById('msg').textContent='البوت كيفكر...';setTimeout(()=>{let all=[];for(let r=0;r<8;r++)for(let c=0;c<8;c++){let p=B[r][c];if(p&&p==p.toLowerCase()){let ms=getMoves(r,c);for(let m of ms)all.push({fr:r,fc:c,tr:m.r,tc:m.c,val:B[m.r][m.c]!=''?10:0});}}if(all.length==0){thinking=false;return;}all.sort((a,b)=>b.val-a.val);let best=all.slice(0,5);let pick=best[Math.floor(Math.random()*best.length)];doMove(pick.fr,pick.fc,pick.tr,pick.tc);thinking=false;document.getElementById('msg').textContent='';},300);}
+function checkEnd(){let wk=false,bk=false;for(let r=0;r<8;r++)for(let c=0;c<8;c++){if(B[r][c]=='K')wk=true;if(B[r][c]=='k')bk=true;}if(!bk){document.getElementById('msg').textContent='🎉 ربحتي!';botOn=false;}if(!wk){document.getElementById('msg').textContent='البوت ربح!';}}
+function newGame(){init();T='w';sel=null;moves=[];hist=[];document.getElementById('msg').textContent='';render();}
+function undo(){if(hist.length){B=hist.pop();T=T=='w'?'b':'w';render();}}
+function toggleBot(){botOn=!botOn;document.getElementById('botBtn').textContent=botOn?'البوت: شغال':'البوت: طافي';if(botOn&&T=='b')botMove();}
+init();render();
 </script>
 </body>
-  </html>
+</html>
