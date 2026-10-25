@@ -1,117 +1,27 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>شطرنج برو</title>
-<style>
-*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui}
-body{background:#0b0f19;color:#fff;min-height:100vh}
-#app{max-width:420px;margin:0 auto;background:#121826;min-height:100vh;padding:10px 12px 90px}
-#header{display:flex;align-items:center;gap:10px;background:#1a2236;border:1px solid #2a3550;border-radius:16px;padding:12px}
-#header h1{font-size:18px;flex:1;font-weight:800}
-#players{display:flex;gap:8px;margin:12px 0}
-.card{flex:1;border-radius:14px;padding:10px;background:#1a2236;border:1px solid #2a3550;display:flex;flex-direction:column;align-items:center;gap:4px}
-.card.white{background:#f5f7fb;color:#121826}
-.card .t{font-size:24px;font-weight:900}
-#status{text-align:center;margin:10px auto;background:#1e293b;border-radius:20px;padding:8px 14px;font-size:13px;font-weight:700;width:fit-content}
-#boardWrap{display:flex;justify-content:center;margin:10px 0}
-#board{width:100%;max-width:380px;aspect-ratio:1/1;display:grid;grid-template-columns:repeat(8,1fr);grid-template-rows:repeat(8,1fr);border-radius:10px;overflow:hidden;border:2px solid #2a3550}
-.sq{display:flex;align-items:center;justify-content:center;position:relative;font-size:5.2vw;line-height:1;cursor:pointer}
-@media(min-width:420px){.sq{font-size:26px}}
-.sq.light{background:#5a6d8a}.sq.dark{background:#2f3b4f}
-.sq.sel{outline:3px solid #60a5fa;outline-offset:-3px;z-index:2}
-.sq.hint::after{content:'';width:22%;aspect-ratio:1;background:rgba(96,165,250,.65);border-radius:50%;position:absolute}
-.sq.cap{box-shadow:inset 0 0 0 3px rgba(239,68,68,.7)}
-#controls{display:flex;gap:8px;margin:12px 0}
-.ctrl{flex:1;background:#1a2236;border:1px solid #2a3550;color:#cbd5e1;padding:11px;border-radius:12px;font-size:13px;font-weight:700;text-align:center;cursor:pointer}
-.ctrl.active{background:#2a3a5a;border-color:#60a5fa;color:#fff}
-#start{width:100%;background:linear-gradient(180deg,#4a7bff,#2d5bff);color:#fff;border:none;padding:15px;border-radius:14px;font-size:18px;font-weight:900}
-.view{display:none}.view.active{display:block}
-.statBox{background:#1a2236;border:1px solid #2a3550;border-radius:16px;padding:16px;margin:10px 0}
-.statRow{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #2a3550}
-.leader{display:flex;align-items:center;gap:12px;padding:10px;background:#1a2236;border-radius:12px;margin:8px 0}
-.rank{width:32px;height:32px;background:#2d5bff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900}
-.btn2{width:100%;background:#1a2236;border:1px solid #2a3550;color:#fff;padding:14px;border-radius:12px;margin:8px 0;font-weight:700}
-#bottom{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:420px;background:#1a2236;border-top:1px solid #2a3550;display:flex;justify-content:space-around;padding:8px 6px 12px;z-index:10}
-.nav{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;color:#8a96b0;cursor:pointer}
-.nav.active{color:#60a5fa}
-</style>
-</head>
-<body>
-<div id="app">
-<div id="header"><span>←</span><h1>شطرنج برو vs بوت 🤖</h1></div>
-
-<div id="v-play" class="view active">
-<div id="players">
-<div class="card"><div style="font-size:12px">الأسود 🤖</div><div class="t">10:00</div></div>
-<div class="card white"><div style="font-size:12px">الأبيض • أنت</div><div class="t">10:00</div></div>
-</div>
-<div id="status">• <span id="turnTxt">دور الأبيض</span></div>
-<div id="boardWrap"><div id="board"></div></div>
-<div id="controls">
-<div class="ctrl" onclick="setMode2p()" id="c2">👥 لاعبان</div>
-<div class="ctrl" onclick="setColor('b')" id="cB">● أسود</div>
-<div class="ctrl active" onclick="setColor('w')" id="cW">● أبيض</div>
-</div>
-<button id="start" onclick="newGame()">بدء اللعبة ◂</button>
-<button class="btn2" onclick="shareSite()" style="margin-top:10px">📤 شارك الموقع - أونلاين</button>
-</div>
-
-<div id="v-rank" class="view">
-<div class="statBox"><h3>🏆 تصنيف اللاعبين</h3></div>
-<div class="leader"><div class="rank">1</div><div style="flex:1"><b>Stockfish</b><div style="font-size:11px;color:#8a96b0">3200 نقطة</div></div>👑</div>
-<div class="leader"><div class="rank" style="background:#555">2</div><div style="flex:1"><b>Magnus</b><div style="font-size:11px">2850 نقطة</div></div></div>
-<div class="leader" style="border:2px solid #60a5fa"><div class="rank" style="background:#60a5fa">3</div><div style="flex:1"><b id="myName">أنت</b><div style="font-size:11px" id="myElo">1200 نقطة</div></div>⭐</div>
-</div>
-
-<div id="v-stats" class="view">
-<div class="statBox"><h3>📊 إحصائياتك</h3></div>
-<div class="statBox">
-<div class="statRow"><span>🎮 مباريات</span><b id="sGames">0</b></div>
-<div class="statRow"><span>✅ فوز</span><b id="sWin">0</b></div>
-<div class="statRow"><span>❌ خسارة</span><b id="sLose">0</b></div>
-<div class="statRow"><span>♟️ قطع</span><b id="sCap">0</b></div>
-</div>
-<button class="btn2" onclick="resetStats()">🗑️ مسح</button>
-</div>
-
-<div id="v-profile" class="view">
-<div class="statBox" style="text-align:center"><div style="font-size:50px">👤</div><h3 id="pName">لاعب شطرنج</h3><div id="pElo">1200 ELO</div></div>
-<div class="statBox">
-<input id="nameInput" placeholder="بدل اسمك" style="width:100%;padding:12px;border-radius:10px;border:1px solid #2a3550;background:#0b0f19;color:#fff;margin-bottom:8px">
-<button class="btn2" onclick="saveName()">💾 حفظ الاسم</button>
-<button class="btn2" onclick="shareSite()">📤 مشاركة</button>
-</div>
-</div>
-
-</div>
-<div id="bottom">
-<div class="nav active" onclick="switchView('play')" id="n-play">🏠<span>لعب</span></div>
-<div class="nav" onclick="switchView('rank')" id="n-rank">🏆<span>تصنيف</span></div>
-<div class="nav" onclick="switchView('stats')" id="n-stats">📊<span>إحصائيات</span></div>
-<div class="nav" onclick="switchView('profile')" id="n-profile">👤<span>حسابي</span></div>
-</div>
-<script>
+<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"><title>شطرنج برو V4</title><style>*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui}body{background:#0b0f19;color:#fff;min-height:100vh}#app{max-width:420px;margin:0 auto;background:#121826;min-height:100vh;padding:10px 12px 90px}#header{display:flex;align-items:center;gap:10px;background:#1a2236;border:1px solid #2a3550;border-radius:16px;padding:12px}#header h1{font-size:16px;flex:1;font-weight:800}#players{display:flex;gap:8px;margin:12px 0}.card{flex:1;border-radius:14px;padding:10px;background:#1a2236;border:1px solid #2a3550;display:flex;flex-direction:column;align-items:center;gap:4px}.card.white{background:#f5f7fb;color:#121826}.card .t{font-size:20px;font-weight:900}#status{text-align:center;margin:10px auto;background:#1e293b;border-radius:20px;padding:8px 14px;font-size:12px;font-weight:700;width:fit-content}#q{margin:6px 0;padding:7px;border-radius:9px;text-align:center;font-weight:900;display:none}#boardWrap{display:flex;justify-content:center;margin:10px 0}#board{width:100%;max-width:360px;aspect-ratio:1/1;display:grid;grid-template-columns:repeat(8,1fr);grid-template-rows:repeat(8,1fr);border-radius:10px;overflow:hidden;border:3px solid #2a3550;background:#fff}.sq{display:flex;align-items:center;justify-content:center;position:relative;aspect-ratio:1/1;line-height:1;cursor:pointer}.sq.light{background:#e8ebf0}.sq.dark{background:#7a8db0}.sq.sel{outline:3px solid #3b82f6;outline-offset:-3px;z-index:2}.sq.last{background:#f6f669!important}.sq.check{background:#ef4444!important}.sq.hint::after{content:'';width:26%;aspect-ratio:1;background:#3b82f6cc;border-radius:50%;position:absolute}.sq.cap{box-shadow:inset 0 0 0 3px #ef4444cc}.p{font-size:clamp(18px,5.5vw,28px);line-height:1;filter:drop-shadow(0 1px 1px #0008);z-index:1}.p.w{color:#fff;-webkit-text-stroke:1.1px #000}.p.b{color:#000;-webkit-text-stroke:.4px #fff}#controls{display:flex;gap:6px;margin:12px 0}.ctrl{flex:1;background:#1a2236;border:1px solid #2a3550;color:#cbd5e1;padding:10px;border-radius:12px;font-size:11px;font-weight:700;text-align:center;cursor:pointer}.ctrl.active{background:#3b82f6;color:#fff;border-color:#3b82f6}#start{width:100%;background:linear-gradient(180deg,#4a7bff,#2d5bff);color:#fff;border:none;padding:14px;border-radius:14px;font-size:16px;font-weight:900}.view{display:none}.view.active{display:block}.statBox{background:#1a2236;border:1px solid #2a3550;border-radius:16px;padding:16px;margin:10px 0}.statRow{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #2a3550}.leader{display:flex;align-items:center;gap:12px;padding:10px;background:#1a2236;border-radius:12px;margin:8px 0}.rank{width:32px;height:32px;background:#2d5bff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900}.btn2{width:100%;background:#1a2236;border:1px solid #2a3550;color:#fff;padding:14px;border-radius:12px;margin:8px 0;font-weight:700}#bottom{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:420px;background:#1a2236;border-top:1px solid #2a3550;display:flex;justify-content:space-around;padding:8px 6px 12px;z-index:10}.nav{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;color:#8a96b0;cursor:pointer}.nav.active{color:#60a5fa}</style></head><body><div id="app"><div id="header"><h1>♔ شطرنج برو V4 - كل القواعد</h1></div><div id="v-play" class="view active"><div id="players"><div class="card"><div style="font-size:11px">الأسود 🤖</div><div class="t">10:00</div></div><div class="card white"><div style="font-size:11px">الأبيض • أنت</div><div class="t">10:00</div></div></div><div id="q"></div><div id="status"><span id="turnTxt">دور الأبيض</span></div><div id="boardWrap"><div id="board"></div></div><div id="controls"><div class="ctrl" onclick="setMode2p()" id="c2">👥 لاعبان</div><div class="ctrl" onclick="setColor('b')" id="cB">♚ أسود</div><div class="ctrl active" onclick="setColor('w')" id="cW">♔ أبيض</div><div class="ctrl" onclick="flipBoard()">🔄</div></div><button id="start" onclick="newGame()">🔄 لعبة جديدة</button></div><div id="v-rank" class="view"><div class="statBox"><h3>🏆 تصنيف اللاعبين</h3></div><div class="leader"><div class="rank">1</div><div style="flex:1"><b>Stockfish</b><div style="font-size:11px;color:#8a96b0">3200 نقطة</div></div>👑</div><div class="leader"><div class="rank" style="background:#555">2</div><div style="flex:1"><b>Magnus</b><div style="font-size:11px">2850 نقطة</div></div></div><div class="leader" style="border:2px solid #60a5fa"><div class="rank" style="background:#60a5fa">3</div><div style="flex:1"><b id="myName">أنت</b><div style="font-size:11px" id="myElo">1200 نقطة</div></div>⭐</div></div><div id="v-stats" class="view"><div class="statBox"><h3>📊 إحصائياتك</h3></div><div class="statBox"><div class="statRow"><span>🎮 مباريات</span><b id="sGames">0</b></div><div class="statRow"><span>✅ فوز</span><b id="sWin">0</b></div><div class="statRow"><span>❌ خسارة</span><b id="sLose">0</b></div><div class="statRow"><span>♟️ قطع</span><b id="sCap">0</b></div></div><button class="btn2" onclick="resetStats()">🗑️ مسح</button></div><div id="v-profile" class="view"><div class="statBox" style="text-align:center"><div style="font-size:50px">👤</div><h3 id="pName">لاعب شطرنج</h3><div id="pElo">1200 ELO</div></div><div class="statBox"><input id="nameInput" placeholder="بدل اسمك" style="width:100%;padding:12px;border-radius:10px;border:1px solid #2a3550;background:#0b0f19;color:#fff;margin-bottom:8px"><button class="btn2" onclick="saveName()">💾 حفظ الاسم</button></div></div></div><div id="bottom"><div class="nav active" onclick="switchView('play')" id="n-play">🏠<span>لعب</span></div><div class="nav" onclick="switchView('rank')" id="n-rank">🏆<span>تصنيف</span></div><div class="nav" onclick="switchView('stats')" id="n-stats">📊<span>إحصائيات</span></div><div class="nav" onclick="switchView('profile')" id="n-profile">👤<span>حسابي</span></div></div><script>
 const S={'K':'♔','Q':'♕','R':'♖','B':'♗','N':'♘','P':'♙','k':'♚','q':'♛','r':'♜','b':'♝','n':'♞','p':'♟'};
-let B,T='w',sel=null,moves=[],player='w',mode='bot',thinking=false;
-let stats=JSON.parse(localStorage.getItem('chessStats')||'{"games":0,"win":0,"lose":0,"draw":0,"cap":0,"elo":1200,"name":"لاعب شطرنج"}');
-function init(){B=[['r','n','b','q','k','b','n','r'],['p','p','p','p','p','p','p','p'],['','','','','','','',''],['','','','','','','',''],['','','','','','','',''],['','','','','','','',''],['P','P','P','P','P','P','P','P'],['R','N','B','Q','K','B','N','R']];}
-function render(){const e=document.getElementById('board');e.innerHTML='';for(let r=0;r<8;r++)for(let c=0;c<8;c++){let d=document.createElement('div');d.className='sq '+((r+c)%2==0?'light':'dark');if(sel&&sel.r==r&&sel.c==c)d.classList.add('sel');let mv=moves.find(m=>m.r==r&&m.c==c);if(mv){if(B[r][c]!='')d.classList.add('cap');else d.classList.add('hint');}let p=B[r][c];if(p){let s=document.createElement('span');s.className='p '+(p==p.toUpperCase()?'w':'b');s.textContent=S[p];d.appendChild(s);}d.onclick=()=>clk(r,c);e.appendChild(d);}document.getElementById('turnTxt').textContent=thinking?'البوت كيفكر...':(T=='w'?'دور الأبيض':'دور الأسود');updateStatsUI();}
-function clk(r,c){if(thinking)return;if(mode=='bot'&&T!=player)return;let p=B[r][c];let own=p&&((T=='w'&&p==p.toUpperCase())||(T=='b'&&p==p.toLowerCase()));if(own){sel={r,c};moves=getMoves(r,c);render();return;}if(sel&&moves.some(m=>m.r==r&&m.c==c)){if(B[r][c]!='')stats.cap++;doMove(sel.r,sel.c,r,c);}sel=null;moves=[];render();if(mode=='bot'&&T!=player)setTimeout(botMove,450);}
-function getMoves(r,c){let p=B[r][c];if(!p)return[];let out=[],white=p==p.toUpperCase(),dir=white?-1:1;function add(nr,nc){if(nr<0||nr>7||nc<0||nc>7)return false;let t=B[nr][nc];if(t==''){out.push({r:nr,c:nc});return true;}let tw=t==t.toUpperCase();if(tw!=white){out.push({r:nr,c:nc});return false;}return false;}let l=p.toLowerCase();if(l=='p'){if(B[r+dir]&&B[r+dir][c]==''){out.push({r:r+dir,c:c});if((white&&r==6||!white&&r==1)&&B[r+dir*2][c]=='')out.push({r:r+dir*2,c:c});}for(let dc of[-1,1]){let nr=r+dir,nc=c+dc;if(nr>=0&&nr<8&&nc>=0&&nc<8){let t=B[nr][nc];if(t&&(t==t.toUpperCase())!=white)out.push({r:nr,c:nc});}}}else{if(l=='r'||l=='q')for(let[dr,dc]of[[1,0],[-1,0],[0,1],[0,-1]])for(let i=1;i<8;i++)if(!add(r+dr*i,c+dc*i))break;if(l=='b'||l=='q')for(let[dr,dc]of[[1,1],[1,-1],[-1,1],[-1,-1]])for(let i=1;i<8;i++)if(!add(r+dr*i,c+dc*i))break;if(l=='n')for(let[dr,dc]of[[2,1],[2,-1],[-2,1],[-2,-1],[1,2],[1,-2],[-1,2],[-1,-2]])add(r+dr,c+dc);if(l=='k')for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++)if(dr||dc)add(r+dr,c+dc);}return out;}
-function doMove(fr,fc,tr,tc){B[tr][tc]=B[fr][fc];B[fr][fc]='';if(B[tr][tc].toLowerCase()=='p'&&(tr==0||tr==7))B[tr][tc]=T=='w'?'Q':'q';T=T=='w'?'b':'w';let wk=false,bk=false;for(let r=0;r<8;r++)for(let c=0;c<8;c++){if(B[r][c]=='K')wk=true;if(B[r][c]=='k')bk=true;}if(!wk||!bk){stats.games++;if(!bk){stats.win++;stats.elo+=20;}else{stats.lose++;stats.elo=Math.max(800,stats.elo-10);}saveStats();alert(!bk?'🎉 ربحتي! +20':'خسرت! -10');newGame();return;}render();saveStats();}
-function botMove(){if(mode!='bot'||T==player)return;thinking=true;render();setTimeout(()=>{let all=[];for(let r=0;r<8;r++)for(let c=0;c<8;c++){let p=B[r][c];if(p){let isBot=(T=='w'&&p==p.toUpperCase())||(T=='b'&&p==p.toLowerCase());if(!isBot)continue;let ms=getMoves(r,c);for(let m of ms){let sc=B[m.r][m.c]!=''?20:0;all.push({fr:r,fc:c,tr:m.r,tc:m.c,score:sc+Math.random()*3});}}}all.sort((a,b)=>b.score-a.score);if(!all.length){thinking=false;return;}let pick=all.slice(0,5)[Math.floor(Math.random()*5)];if(B[pick.tr][pick.tc]!='')stats.cap++;doMove(pick.fr,pick.fc,pick.tr,pick.tc);thinking=false;render();},600);}
-function setColor(c){player=c;mode='bot';document.getElementById('cW').classList.toggle('active',c=='w');document.getElementById('cB').classList.toggle('active',c=='b');document.getElementById('c2').classList.remove('active');newGame();}
-function setMode2p(){mode='2p';document.getElementById('c2').classList.add('active');document.getElementById('cW').classList.remove('active');document.getElementById('cB').classList.remove('active');player='w';newGame();}
-function newGame(){init();T='w';sel=null;moves=[];thinking=false;render();if(mode=='bot'&&T!=player)setTimeout(botMove,300);}
+let B,T='w',sel=null,moves=[],player='w',mode='bot',thinking=false,flip=0,last=null,checkKing=null,C={wK:1,wQ:1,bK:1,bQ:1},E=null;
+let stats=JSON.parse(localStorage.getItem('chessStats')||'{"games":0,"win":0,"lose":0,"cap":0,"elo":1200,"name":"لاعب شطرنج"}');
+function init(){B=[['r','n','b','q','k','b','n','r'],['p','p','p','p','p','p','p','p'],['','','','','','','',''],['','','','','','','',''],['','','','','','','',''],['','','','','','','',''],['P','P','P','P','P','P','P','P'],['R','N','B','Q','K','B','N','R']];T='w';C={wK:1,wQ:1,bK:1,bQ:1};E=null;last=null;checkKing=null;}
+function Cl(b){return b.map(r=>[...r])}
+function FK(b,col){let k=col=='w'?'K':'k';for(let r=0;r<8;r++)for(let c=0;c<8;c++)if(b[r][c]==k)return{r,c};return null}
+function At(b,r,c,white){for(let rr=0;rr<8;rr++)for(let cc=0;cc<8;cc++){let p=b[rr][cc];if(!p)continue;if((p==p.toUpperCase())!=white)continue;let ms=Ps(b,rr,cc,1);if(ms.some(m=>m.r==r&&m.c==c))return 1}return 0}
+function Ps(b,r,c,attack){let p=b[r][c];if(!p)return[];let o=[],W=p==p.toUpperCase(),d=W?-1:1;function Ad(nr,nc){if(nr<0||nr>7||nc<0||nc>7)return 0;let t=b[nr][nc];if(t==''){o.push({r:nr,c:nc});return 1}let tw=t==t.toUpperCase();if(tw!=W){o.push({r:nr,c:nc,x:1});return 0}return 0}let l=p.toLowerCase();if(l=='p'){if(!attack){if(b[r+d]&&b[r+d][c]==''){o.push({r:r+d,c:c});if((W&&r==6||!W&&r==1)&&b[r+d*2][c]=='')o.push({r:r+d*2,c:c,D:1})}for(let dc of[-1,1]){let nr=r+d,nc=c+dc;if(nr>=0&&nr<8&&nc>=0&&nc<8){let t=b[nr][nc];if(t&&(t==t.toUpperCase())!=W)o.push({r:nr,c:nc,x:1})}}if(E){let er=E.r,ec=E.c;if(r+d==er&&Math.abs(c-ec)==1)o.push({r:er,c:ec,x:1,E:1})}}else{for(let dc of[-1,1]){let nr=r+d,nc=c+dc;if(nr>=0&&nr<8&&nc>=0&&nc<8)o.push({r:nr,c:nc})}}}else{if(l=='r'||l=='q')for(let[dr,dc]of[[1,0],[-1,0],[0,1],[0,-1]])for(let i=1;i<8;i++)if(!Ad(r+dr*i,c+dc*i))break;if(l=='b'||l=='q')for(let[dr,dc]of[[1,1],[1,-1],[-1,1],[-1,-1]])for(let i=1;i<8;i++)if(!Ad(r+dr*i,c+dc*i))break;if(l=='n')for(let[dr,dc]of[[2,1],[2,-1],[-2,1],[-2,-1],[1,2],[1,-2],[-1,2],[-1,-2]])Ad(r+dr,c+dc);if(l=='k'){for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++)if(dr||dc)Ad(r+dr,c+dc);if(!attack){if(W&&r==7&&c==4){if(C.wK&&b[7][5]==''&&b[7][6]==''&&!At(b,7,4,0)&&!At(b,7,5,0)&&!At(b,7,6,0))o.push({r:7,c:6,O:'K'});if(C.wQ&&b[7][1]==''&&b[7][2]==''&&b[7][3]==''&&!At(b,7,4,0)&&!At(b,7,3,0)&&!At(b,7,2,0))o.push({r:7,c:2,O:'Q'});}if(!W&&r==0&&c==4){if(C.bK&&b[0][5]==''&&b[0][6]==''&&!At(b,0,4,1)&&!At(b,0,5,1)&&!At(b,0,6,1))o.push({r:0,c:6,O:'K'});if(C.bQ&&b[0][1]==''&&b[0][2]==''&&b[0][3]==''&&!At(b,0,4,1)&&!At(b,0,3,1)&&!At(b,0,2,1))o.push({r:0,c:2,O:'Q'});}}}}return o}
+function GL(b,r,c){let ps=Ps(b,r,c,0),o=[],W=b[r][c]==b[r][c].toUpperCase();for(let mm of ps){let nb=Cl(b);if(mm.E)nb[r][mm.c]='';nb[mm.r][mm.c]=nb[r][c];nb[r][c]='';if(mm.O){if(mm.O=='K'){nb[mm.r][mm.c-1]=nb[mm.r][7];nb[mm.r][7]=''}else{nb[mm.r][mm.c+1]=nb[mm.r][0];nb[mm.r][0]=''}}let k=FK(nb,W?'w':'b');if(!k)continue;if(At(nb,k.r,k.c,!W))continue;o.push(mm)}return o}
+function GA(col){let a=[];for(let r=0;r<8;r++)for(let c=0;c<8;c++){let p=B[r][c];if(!p)continue;let W=p==p.toUpperCase();if((col=='w'&&!W)||(col=='b'&&W))continue;let ms=GL(B,r,c);for(let mm of ms)a.push({fr:r,fc:c,...mm})}return a}
+function IC(col){let k=FK(B,col);if(!k)return 0;return At(B,k.r,k.c,col=='w'?0:1)}
+function render(){const e=document.getElementById('board');e.innerHTML='';for(let dr=0;dr<8;dr++)for(let dc=0;dc<8;dc++){let r=flip?7-dr:dr,c=flip?7-dc:dc;let d=document.createElement('div');d.className='sq '+((r+c)%2==0?'light':'dark');if(last&&(last.fr==r&&last.fc==c||last.tr==r&&last.tc==c))d.classList.add('last');if(checkKing&&checkKing.r==r&&checkKing.c==c)d.classList.add('check');if(sel&&sel.r==r&&sel.c==c)d.classList.add('sel');let mv=moves.find(m=>m.r==r&&m.c==c);if(mv){if(B[r][c]!=''||mv.E)d.classList.add('cap');else d.classList.add('hint');}let p=B[r][c];if(p){let s=document.createElement('span');s.className='p '+(p==p.toUpperCase()?'w':'b');s.textContent=S[p];d.appendChild(s);}d.onclick=()=>clk(r,c);e.appendChild(d);}let ch=IC(T);let q=document.getElementById('q');if(ch){q.textContent='⚠️ كش! الملك في خطر!';q.style.background='#ef4444';q.style.display='block';checkKing=FK(B,T)}else{q.style.display='none';checkKing=null}document.getElementById('turnTxt').textContent=thinking?'البوت كيفكر...':(ch?'كش! ':'')+(T=='w'?'دور الأبيض':'دور الأسود');updateStatsUI();}
+function clk(r,c){if(thinking)return;if(mode=='bot'&&T!=player)return;let p=B[r][c];let own=p&&((T=='w'&&p==p.toUpperCase())||(T=='b'&&p==p.toLowerCase()));if(own){sel={r,c};moves=GL(B,r,c);render();return;}if(sel&&moves.some(m=>m.r==r&&m.c==c)){let mm=moves.find(m=>m.r==r&&m.c==c);if(B[r][c]!=''||mm.E)stats.cap++;doMove(sel.r,sel.c,mm.r,mm.c,mm);}sel=null;moves=[];render();if(mode=='bot'&&T!=player)setTimeout(botMove,400);}
+function doMove(fr,fc,tr,tc,me){let p=B[fr][fc];let ep=me&&me.E;let oc=me&&me.O;let db=me&&me.D;if(p=='K'){C.wK=0;C.wQ=0}if(p=='k'){C.bK=0;C.bQ=0}if(p=='R'&&fr==7&&fc==0)C.wQ=0;if(p=='R'&&fr==7&&fc==7)C.wK=0;if(p=='r'&&fr==0&&fc==0)C.bQ=0;if(p=='r'&&fr==0&&fc==7)C.bK=0;if(ep)B[fr][tc]='';B[tr][tc]=B[fr][fc];B[fr][fc]='';if(oc){if(oc=='K'){B[tr][tc-1]=B[tr][7];B[tr][7]=''}else{B[tr][tc+1]=B[tr][0];B[tr][0]=''}let q=document.getElementById('q');q.textContent='🏰 تبييت '+(oc=='K'?'O-O':'O-O-O');q.style.background='#3b82f6';q.style.display='block';setTimeout(()=>q.style.display='none',2000)}if(ep){let q=document.getElementById('q');q.textContent='♟️ en passant!';q.style.background='#22c55e';q.style.display='block';setTimeout(()=>q.style.display='none',2000)}if(B[tr][tc].toLowerCase()=='p'&&(tr==0||tr==7))B[tr][tc]=T=='w'?'Q':'q';if(db)E={r:fr+(T=='w'?-1:1),c:fc};else E=null;last={fr,fc,tr,tc};T=T=='w'?'b':'w';let al=GA(T);let ch=IC(T);if(al.length==0){stats.games++;if(ch){if(T=='w'){stats.lose++;stats.elo=Math.max(800,stats.elo-15);}else{stats.win++;stats.elo+=20;}saveStats();alert('♔ كش مات! '+(T=='w'?'الأسود ربح!':'الأبيض ربح!'))}else{saveStats();alert('تعادل - خنق!')}newGame();return;}render();saveStats();}
+function botMove(){if(mode!='bot'||T==player)return;let al=GA(T);if(!al.length)return;thinking=true;render();setTimeout(()=>{al.sort((a,b)=>{let va=B[a.tr][a.tc]?15:0,vb=B[b.tr][b.tc]?15:0;if(a.E)va+=10;if(b.E)vb+=10;if(a.O)va+=5;return vb-va+Math.random()*2});let pick=al.slice(0,5)[Math.floor(Math.random()*Math.min(5,al.length))];if(B[pick.tr][pick.tc]!=''||pick.E)stats.cap++;doMove(pick.fr,pick.fc,pick.tr,pick.tc,pick);thinking=false;render();},700);}
+function setColor(c){player=c;mode='bot';flip=c=='b'?1:0;document.getElementById('cW').classList.toggle('active',c=='w');document.getElementById('cB').classList.toggle('active',c=='b');document.getElementById('c2').classList.remove('active');newGame();}
+function setMode2p(){mode='2p';flip=0;document.getElementById('c2').classList.add('active');document.getElementById('cW').classList.remove('active');document.getElementById('cB').classList.remove('active');newGame();}
+function flipBoard(){flip=!flip;render();}
+function newGame(){init();T='w';sel=null;moves=[];thinking=false;document.getElementById('q').style.display='none';render();if(mode=='bot'&&T!=player)setTimeout(botMove,300);}
 function switchView(v){document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.nav').forEach(x=>x.classList.remove('active'));document.getElementById('v-'+v).classList.add('active');document.getElementById('n-'+v).classList.add('active');updateStatsUI();}
 function updateStatsUI(){document.getElementById('sGames').textContent=stats.games;document.getElementById('sWin').textContent=stats.win;document.getElementById('sLose').textContent=stats.lose;document.getElementById('sCap').textContent=stats.cap;document.getElementById('myElo').textContent=stats.elo+' نقطة';document.getElementById('myName').textContent=stats.name;document.getElementById('pName').textContent=stats.name;document.getElementById('pElo').textContent=stats.elo+' ELO';}
 function saveStats(){localStorage.setItem('chessStats',JSON.stringify(stats));updateStatsUI();}
-function resetStats(){if(confirm('تمسح؟')){stats={games:0,win:0,lose:0,draw:0,cap:0,elo:1200,name:stats.name};saveStats();}}
-function saveName(){let n=document.getElementById('nameInput').value;if(n){stats.name=n;saveStats();alert('تم: '+n);}}
-function shareSite(){if(navigator.share){navigator.share({title:'شطرنج برو',url:'https://benabbou35.github.io/C'})}else{prompt('نسخ:', 'https://benabbou35.github.io/C')}}
+function resetStats(){if(confirm('تمسح الإحصائيات؟')){stats={games:0,win:0,lose:0,cap:0,elo:1200,name:stats.name};saveStats();}}
+function saveName(){let n=document.getElementById('nameInput').value.trim();if(n){stats.name=n;saveStats();alert('تم حفظ: '+n);}}
 init();render();updateStatsUI();
-</script>
-</body>
-</html>
+</script></body></html>
