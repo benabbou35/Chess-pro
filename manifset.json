@@ -1,0 +1,13 @@
+{
+  "name": "شطرنج برو",
+  "short_name": "شطرنج",
+  "start_url": "/Chess-pro/",
+  "display": "standalone",
+  "background_color": "#0b0f19",
+  "theme_color": "#2d5bff",
+  "icons": [{
+    "src": "https://cdn-icons-png.flaticon.com/512/4366/4366417.png",
+    "sizes": "512x512",
+    "type": "image/png"
+  }]
+}
