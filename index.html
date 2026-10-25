@@ -3,42 +3,69 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>شطرنج برو</title>
+<title>شطرنج برو vs بوت</title>
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{background:#161512;color:#fff;font-family:system-ui;display:flex;flex-direction:column;align-items:center;padding:12px}
-h1{color:#81b64c;margin:10px;font-size:26px}
-#board{width:94vw;max-width:400px;aspect-ratio:1;display:grid;grid-template-columns:repeat(8,1fr);border:3px solid #3a3a3a;border-radius:6px;overflow:hidden}
-.sq{display:flex;align-items:center;justify-content:center;font-size:30px;cursor:pointer;position:relative}
-.light{background:#f0d9b5}.dark{background:#769656}
-.sel{background:#f6f669 !important}
-.hint::after{content:'';width:18px;height:18px;background:rgba(0,0,0,.35);border-radius:50%;position:absolute}
-.cap::after{content:'';width:90%;height:90%;border:4px solid rgba(0,0,0,.35);border-radius:50%;position:absolute}
-button{background:#81b64c;color:#000;border:none;padding:10px 18px;border-radius:8px;font-weight:bold;margin:5px}
+*{box-sizing:border-box;margin:0;padding:0;font-family:Tahoma}
+body{background:#0b0f19;color:#fff;min-height:100vh;padding:0 0 80px}
+#app{max-width:430px;margin:0 auto;background:#121826;min-height:100vh;padding:12px}
+#header{display:flex;align-items:center;gap:12px;background:#1a2236;border:1px solid #2a3550;border-radius:16px;padding:12px;margin:8px 0}
+#header h1{font-size:20px;font-weight:800;flex:1}
+#players{display:flex;gap:10px;margin:10px 0}
+.card{flex:1;border-radius:14px;padding:10px;border:1px solid #2a3550;background:#1a2236;display:flex;flex-direction:column;align-items:center;gap:6px}
+.card.white{background:#f5f7fb;color:#121826}
+.timer{font-size:26px;font-weight:900}
+.vs{width:32px;display:flex;align-items:center;justify-content:center;margin-top:25px}
+#status{text-align:center;margin:12px auto;background:#1e293b;border:1px solid #2a3a5a;border-radius:20px;padding:8px 14px;font-size:13px;font-weight:700;width:fit-content}
+#board{width:100%;aspect-ratio:1;display:grid;grid-template-columns:repeat(8,1fr);border-radius:12px;overflow:hidden;border:2px solid #2a3550}
+.sq{display:flex;align-items:center;justify-content:center;font-size:34px;cursor:pointer}
+.sq.light{background:#4a5a73}
+.sq.dark{background:#2a3548}
+.sq.sel{box-shadow:inset 0 0 0 3px #60a5fa !important}
+.sq.hint::after{content:'';width:18px;height:18px;background:rgba(96,165,250,.7);border-radius:50%;position:absolute}
+.sq.cap::after{content:'';width:88%;height:88%;border:3px solid rgba(239,68,68,.6);border-radius:50%;position:absolute}
+.piece.w{color:#f8fafc;text-shadow:0 2px 6px #000}
+.piece.b{color:#0f172a}
+#controls{display:flex;gap:8px;margin:14px 0}
+.ctrl{flex:1;background:#1a2236;border:1px solid #2a3550;color:#cbd5e1;padding:10px;border-radius:12px;font-weight:700;text-align:center}
+.ctrl.active{background:#2a3a5a;border-color:#60a5fa;color:#fff}
+#start{width:100%;background:linear-gradient(#4a7bff,#2d5bff);color:#fff;border:none;padding:16px;border-radius:14px;font-size:20px;font-weight:900}
+#bottom{position:fixed;bottom:10px;left:50%;transform:translateX(-50%);width:calc(100% - 20px);max-width:410px;background:#1a2236;border:1px solid #2a3550;border-radius:20px;display:flex;justify-content:space-around;padding:10px}
+.nav{flex:1;text-align:center;font-size:11px;color:#8a96b0}
+.nav.active{color:#60a5fa}
 </style>
 </head>
 <body>
-<h1>♔ شطرنج برو - ضد البوت</h1>
+<div id="app">
+<div id="header"><span>←</span><h1>شطرنج برو vs بوت 🤖</h1><span>⚙️</span></div>
+<div id="players">
+<div class="card white"><div>الأبيض</div><div style="font-size:28px">♔</div><div class="timer">10:00</div></div>
+<div class="vs">🤖</div>
+<div class="card"><div>الأسود</div><div style="font-size:28px">♚</div><div class="timer">10:00</div></div>
+</div>
+<div id="status">🤖 • <b id="turnTxt">دور الأسود - للحركة</b></div>
 <div id="board"></div>
-<div id="msg" style="margin:10px;color:#81b64c;font-weight:bold;height:20px"></div>
-<div>
-<button onclick="newGame()">جديدة</button>
-<button onclick="undo()" style="background:#3a3a3a;color:#fff">تراجع</button>
-<button onclick="toggleBot()" id="botBtn" style="background:#3a3a3a;color:#fff">البوت: شغال</button>
+<div id="controls">
+<div class="ctrl" onclick="setColor('w')" id="cW">● أبيض</div>
+<div class="ctrl active" onclick="setColor('b')" id="cB">● أسود</div>
+<div class="ctrl" onclick="setMode2p()" id="c2">👥 لاعبان</div>
+</div>
+<button id="start" onclick="newGame()">◂ بدء اللعبة</button>
+</div>
+<div id="bottom">
+<div class="nav active">🏠 لعب</div><div class="nav">🏆 تصنيف</div><div class="nav">📊 إحصائيات</div><div class="nav">👤 حسابي</div>
 </div>
 <script>
 const S={'K':'♔','Q':'♕','R':'♖','B':'♗','N':'♘','P':'♙','k':'♚','q':'♛','r':'♜','b':'♝','n':'♞','p':'♟'};
-let B,T='w',sel=null,moves=[],hist=[],botOn=true,thinking=false;
+let B,T='w',sel=null,moves=[],player='b',mode='bot',thinking=false;
 function init(){B=[['r','n','b','q','k','b','n','r'],['p','p','p','p','p','p','p','p'],['','','','','','','',''],['','','','','','','',''],['','','','','','','',''],['','','','','','','',''],['P','P','P','P','P','P','P','P'],['R','N','B','Q','K','B','N','R']];}
-function render(){const e=document.getElementById('board');e.innerHTML='';for(let r=0;r<8;r++)for(let c=0;c<8;c++){let d=document.createElement('div');d.className='sq '+((r+c)%2==0?'light':'dark');if(sel&&sel.r==r&&sel.c==c)d.classList.add('sel');let mv=moves.find(m=>m.r==r&&m.c==c);if(mv){if(B[r][c]!='')d.classList.add('cap');else d.classList.add('hint');}let p=B[r][c];if(p){d.textContent=S[p];d.style.color=p==p.toUpperCase()?'#fff':'#000';d.style.textShadow=p==p.toUpperCase()?'0 1px 3px #000':'';}d.onclick=()=>clk(r,c);e.appendChild(d);}}
-function clk(r,c){if(thinking)return;let p=B[r][c];let own=p&&((T=='w'&&p==p.toUpperCase())||(T=='b'&&p==p.toLowerCase()));if(own){sel={r,c};moves=getMoves(r,c);render();return;}if(sel&&moves.some(m=>m.r==r&&m.c==c)){doMove(sel.r,sel.c,r,c);}sel=null;moves=[];render();if(botOn&&T=='b')setTimeout(botMove,400);}
+function render(){const e=document.getElementById('board');e.innerHTML='';for(let r=0;r<8;r++)for(let c=0;c<8;c++){let d=document.createElement('div');d.className='sq '+((r+c)%2==0?'light':'dark');if(sel&&sel.r==r&&sel.c==c)d.classList.add('sel');let mv=moves.find(m=>m.r==r&&m.c==c);if(mv){if(B[r][c]!='')d.classList.add('cap');else d.classList.add('hint');}let p=B[r][c];if(p){let span=document.createElement('span');span.className='piece '+(p==p.toUpperCase()?'w':'b');span.textContent=S[p];d.appendChild(span);}d.onclick=()=>clk(r,c);e.appendChild(d);}document.getElementById('turnTxt').textContent=thinking?'البوت كيفكر... 🤔':(T=='w'?'دور الأبيض - للحركة':'دور الأسود - للحركة');}
+function clk(r,c){if(thinking)return;if(mode=='bot'&&T!=player)return;let p=B[r][c];let own=p&&((T=='w'&&p==p.toUpperCase())||(T=='b'&&p==p.toLowerCase()));if(own){sel={r,c};moves=getMoves(r,c);render();return;}if(sel&&moves.some(m=>m.r==r&&m.c==c)){doMove(sel.r,sel.c,r,c);}sel=null;moves=[];render();if(mode=='bot'&&T!=player)setTimeout(botMove,500);}
 function getMoves(r,c){let p=B[r][c];if(!p)return[];let out=[],white=p==p.toUpperCase(),dir=white?-1:1;function add(nr,nc){if(nr<0||nr>7||nc<0||nc>7)return false;let t=B[nr][nc];if(t==''){out.push({r:nr,c:nc});return true;}let tw=t==t.toUpperCase();if(tw!=white){out.push({r:nr,c:nc});return false;}return false;}let l=p.toLowerCase();if(l=='p'){if(B[r+dir]&&B[r+dir][c]==''){out.push({r:r+dir,c:c});if((white&&r==6||!white&&r==1)&&B[r+dir*2][c]=='')out.push({r:r+dir*2,c:c});}for(let dc of[-1,1]){let nr=r+dir,nc=c+dc;if(nr>=0&&nr<8&&nc>=0&&nc<8){let t=B[nr][nc];if(t&&(t==t.toUpperCase())!=white)out.push({r:nr,c:nc});}}}else{if(l=='r'||l=='q')for(let[dr,dc]of[[1,0],[-1,0],[0,1],[0,-1]])for(let i=1;i<8;i++)if(!add(r+dr*i,c+dc*i))break;if(l=='b'||l=='q')for(let[dr,dc]of[[1,1],[1,-1],[-1,1],[-1,-1]])for(let i=1;i<8;i++)if(!add(r+dr*i,c+dc*i))break;if(l=='n')for(let[dr,dc]of[[2,1],[2,-1],[-2,1],[-2,-1],[1,2],[1,-2],[-1,2],[-1,-2]])add(r+dr,c+dc);if(l=='k')for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++)if(dr||dc)add(r+dr,c+dc);}return out;}
-function doMove(fr,fc,tr,tc){hist.push(JSON.parse(JSON.stringify(B)));B[tr][tc]=B[fr][fc];B[fr][fc]='';if(B[tr][tc].toLowerCase()=='p'&&(tr==0||tr==7))B[tr][tc]=T=='w'?'Q':'q';T=T=='w'?'b':'w';render();checkEnd();}
-function botMove(){if(T!='b')return;thinking=true;document.getElementById('msg').textContent='البوت كيفكر...';setTimeout(()=>{let all=[];for(let r=0;r<8;r++)for(let c=0;c<8;c++){let p=B[r][c];if(p&&p==p.toLowerCase()){let ms=getMoves(r,c);for(let m of ms)all.push({fr:r,fc:c,tr:m.r,tc:m.c,val:B[m.r][m.c]!=''?10:0});}}if(all.length==0){thinking=false;return;}all.sort((a,b)=>b.val-a.val);let best=all.slice(0,5);let pick=best[Math.floor(Math.random()*best.length)];doMove(pick.fr,pick.fc,pick.tr,pick.tc);thinking=false;document.getElementById('msg').textContent='';},300);}
-function checkEnd(){let wk=false,bk=false;for(let r=0;r<8;r++)for(let c=0;c<8;c++){if(B[r][c]=='K')wk=true;if(B[r][c]=='k')bk=true;}if(!bk){document.getElementById('msg').textContent='🎉 ربحتي!';botOn=false;}if(!wk){document.getElementById('msg').textContent='البوت ربح!';}}
-function newGame(){init();T='w';sel=null;moves=[];hist=[];document.getElementById('msg').textContent='';render();}
-function undo(){if(hist.length){B=hist.pop();T=T=='w'?'b':'w';render();}}
-function toggleBot(){botOn=!botOn;document.getElementById('botBtn').textContent=botOn?'البوت: شغال':'البوت: طافي';if(botOn&&T=='b')botMove();}
+function doMove(fr,fc,tr,tc){B[tr][tc]=B[fr][fc];B[fr][fc]='';if(B[tr][tc].toLowerCase()=='p'&&(tr==0||tr==7))B[tr][tc]=T=='w'?'Q':'q';T=T=='w'?'b':'w';render();}
+function botMove(){if(mode!='bot'||T==player)return;thinking=true;render();setTimeout(()=>{let all=[];for(let r=0;r<8;r++)for(let c=0;c<8;c++){let p=B[r][c];if(p){let isBot=(T=='w'&&p==p.toUpperCase())||(T=='b'&&p==p.toLowerCase());if(!isBot)continue;let ms=getMoves(r,c);for(let m of ms){let score=B[m.r][m.c]!=''?10:0;all.push({fr:r,fc:c,tr:m.r,tc:m.c,score:score+Math.random()});}}}all.sort((a,b)=>b.score-a.score);if(!all.length){thinking=false;return;}let pick=all.slice(0,4)[Math.floor(Math.random()*4)];doMove(pick.fr,pick.fc,pick.tr,pick.tc);thinking=false;render();},600);}
+function setColor(c){player=c;mode='bot';document.getElementById('cW').classList.toggle('active',c=='w');document.getElementById('cB').classList.toggle('active',c=='b');document.getElementById('c2').classList.remove('active');newGame();}
+function setMode2p(){mode='2p';document.getElementById('c2').classList.add('active');document.getElementById('cW').classList.remove('active');document.getElementById('cB').classList.remove('active');player='w';newGame();}
+function newGame(){init();T='w';sel=null;moves=[];thinking=false;render();if(mode=='bot'&&T!=player)setTimeout(botMove,400);}
 init();render();
 </script>
 </body>
