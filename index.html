@@ -1,8 +1,77 @@
-<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>شطرنج 7 مستويات</title><link rel="manifest" href="manifest.json"><script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script><style>*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui}body{background:#0b0f19;color:#fff}#app{max-width:420px;margin:0 auto;background:#121826;min-height:100vh;padding:10px 12px 90px}#status{text-align:center;margin:8px auto;background:#1e293b;border-radius:20px;padding:8px 14px;font-size:12px;font-weight:700;width:fit-content;display:flex;gap:8px}#q{margin:6px 0;padding:7px;border-radius:9px;text-align:center;font-weight:900;display:none;background:#3b82f6;color:#fff}#online{margin:8px 0;padding:10px;background:#0f1a2e;border:1px solid #2d5bff;border-radius:12px;display:none;text-align:center}#boardWrap{display:flex;justify-content:center;margin:8px 0}#board{width:100%;max-width:360px;aspect-ratio:1/1;display:grid;grid-template-columns:repeat(8,1fr);grid-template-rows:repeat(8,1fr);border-radius:10px;overflow:hidden;border:2px solid #2a3550}.sq{display:flex;align-items:center;justify-content:center;position:relative;aspect-ratio:1/1;cursor:pointer}.sq.light{background:#cbd5e1}.sq.dark{background:#64748b}.sq.sel{outline:3px solid #3b82f6;outline-offset:-3px;z-index:2}.sq.hint::after{content:'';width:28%;aspect-ratio:1;background:#3b82f6;border-radius:50%;position:absolute}.sq.cap{box-shadow:inset 0 0 0 3px #3b82f6}.p{font-size:28px;line-height:1;z-index:1}.p.w{color:#fff;text-shadow:0 1px 3px #000}.p.b{color:#000;text-shadow:0 0 2px #fff}#levelBox{background:#1e293b;border:1px solid #334155;border-radius:12px;padding:10px;margin:8px 0;display:flex;gap:8px;align-items:center;font-size:12px;font-weight:700}#levelSel{flex:1;background:#0b0f19;color:#fff;border:1px solid #334155;padding:10px;border-radius:10px}#controls{display:flex;gap:6px;margin:8px 0}.ctrl{flex:1;background:#1e293b;border:1px solid #334155;color:#cbd5e1;padding:10px;border-radius:10px;font-size:11px;font-weight:700;text-align:center;cursor:pointer}.ctrl.active{background:#3b82f6;color:#fff}#start{width:100%;background:#3b82f6;color:#fff;border:none;padding:13px;border-radius:12px;font-size:15px;font-weight:900;margin-bottom:6px}.btnOnline{width:100%;background:#22c55e;color:#fff;border:none;padding:11px;border-radius:10px;font-size:13px;font-weight:900;margin-bottom:6px}.view{display:none}.view.active{display:block}#bottom{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:420px;background:#1e293b;border-top:1px solid #334155;display:flex;justify-content:space-around;padding:8px 6px;z-index:10}.nav{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px;color:#94a3b8;cursor:pointer}.nav.active{color:#60a5fa}</style></head><body><div id="app"><div id="v-play" class="view active"><div id="status"><span id="turnTxt">دور الأبيض</span> <span id="lvlBadge" style="background:#3b82f6;padding:2px 8px;border-radius:10px;font-size:10px">500-800</span></div><div id="q">كش!</div><div id="levelBox">🎯 <select id="levelSel" onchange="changeLevel()"><option value="650">🟢 500-800 مبتدئ بزاف</option><option value="950">🔵 800-1100 مبتدئ</option><option value="1300">🟡 1100-1500 سهل</option><option value="1600">🟠 1500-1700 متوسط</option><option value="1850">🔴 1700-2000 قوي</option><option value="2250">🟣 2000-2500 خبير</option><option value="2800" selected>⚫ 2500-3000 أسطوري</option></select></div><div id="online"><div id="onTxt"></div><input id="onLink" style="width:100%;margin-top:6px;padding:8px;border-radius:8px;background:#0b0f19;color:#60a5fa;display:none" readonly><button id="onCopy" onclick="copyLink()" style="margin-top:6px;width:100%;padding:6px;border-radius:8px;background:#3b82f6;color:#fff;border:none;display:none">نسخ</button></div><div id="boardWrap"><div id="board"></div></div><div id="controls"><div class="ctrl" onclick="setMode2p()" id="c2">👥 لاعبان</div><div class="ctrl" onclick="setColor('b')" id="cB">● أسود</div><div class="ctrl active" onclick="setColor('w')" id="cW">● أبيض</div></div><button id="start" onclick="newGame()">◂ بدء اللعبة</button><button class="btnOnline" onclick="createOnline()">🌐 إنشاء رابط أونلاين</button></div></div><div id="bottom"><div class="nav active">🏠 لعب</div></div><script>
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chess Pro - العب الشطرنج اونلاين مجانا</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+*{font-family:'Tajawal',system-ui}
+.board{aspect-ratio:1/1;display:grid;grid-template-columns:repeat(8,1fr);grid-template-rows:repeat(8,1fr);border-radius:8px;overflow:hidden}
+.sq{display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer;font-size:28px}
+.sq.light{background:#ebecd0}.sq.dark{background:#739552}
+.sq.sel{outline:3px solid #facc15;outline-offset:-3px;z-index:2}
+.sq.hint::after{content:'';width:28%;aspect-ratio:1;background:#facc15;border-radius:50%;position:absolute}
+.p{line-height:1;z-index:1}.p.w{color:#fff;text-shadow:0 0 2px #000}.p.b{color:#000}
+.view{display:none}.view.active{display:block}
+.glass{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1)}
+</style>
+</head>
+<body class="bg-[#121212] text-white pb-20">
+<header class="sticky top-0 z-50 bg-[#1a1a1a] border-b border-white/10">
+<div class="max-w-6xl mx-auto px-4 py-3 flex justify-between">
+<div class="flex gap-3 items-center"><div class="w-8 h-8 bg-white rounded flex items-center justify-center text-black font-black">♔</div><span class="font-black">Chess Pro</span></div>
+<span class="bg-white/10 px-3 py-1 rounded-full text-xs">chessproo.com 🔒</span>
+</div>
+</header>
+<div id="home" class="view active">
+<div class="max-w-6xl mx-auto px-4 py-6">
+<div class="text-center mb-8">
+<div class="mx-auto w-28 h-28 bg-white rounded-2xl flex items-center justify-center mb-4 text-black text-3xl">♜ ♞</div>
+<h1 class="text-4xl font-black">العب الشطرنج<br>اونلاين مجانا</h1>
+<p class="text-white/60 text-sm max-w-md mx-auto mt-3">مباريات مصنفة، محرك استاذ كبير، الغاز وبطولات</p>
+<div class="mt-5 space-y-2 max-w-sm mx-auto">
+<button onclick="router('lobby')" class="w-full bg-[#81b64c] py-4 rounded-xl font-black">العب اونلاين 🚀</button>
+<button onclick="scrollToBot()" class="w-full bg-white/10 py-3 rounded-xl font-bold">العب ضد المحرك</button>
+<button onclick="router('profile')" class="w-full border border-white/20 py-3 rounded-xl">انشئ حسابك المجاني ←</button>
+</div>
+</div>
+<div class="max-w-[320px] mx-auto mb-10"><div id="previewBoard" class="board"></div></div>
+<div class="mb-6"><h2 class="font-black text-xl mb-3">مستويات 7 - اختر المستوى</h2>
+<div class="grid grid-cols-2 gap-2">
+<button onclick="setLevel(650)" class="glass p-3 rounded-xl text-right text-sm">🟢 500-800 مبتدئ بزاف</button>
+<button onclick="setLevel(950)" class="glass p-3 rounded-xl text-right text-sm">🔵 800-1100 مبتدئ</button>
+<button onclick="setLevel(1300)" class="glass p-3 rounded-xl text-right text-sm">🟡 1100-1500 سهل</button>
+<button onclick="setLevel(1600)" class="glass p-3 rounded-xl text-right text-sm">🟠 1500-1700 متوسط</button>
+<button onclick="setLevel(1850)" class="glass p-3 rounded-xl text-right text-sm">🔴 1700-2000 قوي</button>
+<button onclick="setLevel(2250)" class="glass p-3 rounded-xl text-right text-sm">🟣 2000-2500 خبير</button>
+<button onclick="setLevel(2800)" class="col-span-2 glass p-3 rounded-xl text-right text-sm bg-yellow-500/10 border border-yellow-500/30">⚫ 2500-3000 اسطوري</button>
+</div></div>
+</div>
+<div id="botSection" class="max-w-md mx-auto px-4 py-4 border-t border-white/10">
+<div class="flex justify-between mb-2"><h2 class="font-black">العب ضد المحرك</h2><select id="levelSel" onchange="changeLevel()" class="bg-[#1a1a1a] border border-white/10 rounded-lg px-2 py-1 text-xs"><option value="650">🟢 500-800</option><option value="950">🔵 800-1100</option><option value="1300">🟡 1100-1500</option><option value="1600">🟠 1500-1700</option><option value="1850">🔴 1700-2000</option><option value="2250">🟣 2000-2500</option><option value="2800" selected>⚫ 2500-3000</option></select></div>
+<div class="flex gap-2 justify-center mb-2 text-xs"><span id="turnTxt" class="bg-white/10 px-3 py-1 rounded-full">دور الابيض</span><span id="lvlBadge" class="bg-[#81b64c] px-2 py-1 rounded-full">2500-3000</span><span id="checkBadge" class="bg-red-500 px-2 py-1 rounded-full hidden">كش!</span></div>
+<div id="mainBoard" class="board"></div>
+<div class="flex gap-2 mt-3"><button onclick="setColor('w')" class="flex-1 bg-white/10 py-2 rounded-lg text-xs">● ابيض</button><button onclick="setColor('b')" class="flex-1 bg-white/10 py-2 rounded-lg text-xs">● اسود</button><button onclick="setMode2p()" class="flex-1 bg-white/10 py-2 rounded-lg text-xs">👥 لاعبان</button></div>
+<button onclick="newGame()" class="w-full mt-3 bg-[#81b64c] py-3 rounded-xl font-black">بدء اللعبة</button>
+</div>
+</div>
+<div id="lobby" class="view max-w-md mx-auto px-4 py-10"><div class="glass p-8 rounded-2xl text-center"><div class="text-5xl mb-3">🌐</div><h2 class="text-xl font-black">العب اونلاين</h2><button class="w-full mt-4 bg-[#81b64c] py-3 rounded-xl font-black">تسجيل الدخول</button><button onclick="scrollToBot()" class="w-full mt-2 bg-white/10 py-3 rounded-xl">العب ضد الروبوت</button></div></div>
+<div id="puzzles" class="view max-w-md mx-auto px-4 py-4"><div id="puzzleBoard" class="board"></div></div>
+<div id="profile" class="view max-w-md mx-auto px-4 py-6"><div class="glass p-6 rounded-2xl text-center"><div class="w-16 h-16 bg-purple-600 rounded-full mx-auto flex items-center justify-center text-2xl font-black">P</div><h3 class="mt-2 font-black">لاعب - ELO 700</h3></div></div>
+<nav class="fixed bottom-0 left-0 right-0 bg-[#1a1a1a] border-t border-white/10 flex justify-around py-2 text-[10px]">
+<button onclick="router('home')" class="flex flex-col items-center gap-1 text-white" data-nav="home">🏠<span>الرئيسية</span></button>
+<button onclick="router('home');setTimeout(scrollToBot,100)" class="flex flex-col items-center gap-1 text-white/40">🎮<span>اللعب</span></button>
+<button onclick="router('puzzles')" class="flex flex-col items-center gap-1 text-white/40">🧩<span>الالغاز</span></button>
+<button onclick="router('lobby')" class="flex flex-col items-center gap-1 text-white/40">📺<span>المباريات</span></button>
+<button onclick="router('profile')" class="flex flex-col items-center gap-1 text-white/40">⋯<span>المزيد</span></button>
+</nav>
+<script>
+// نفس المنطق الخفيف بلا تعليق
 const S={'K':'♔','Q':'♕','R':'♖','B':'♗','N':'♘','P':'♙','k':'♚','q':'♛','r':'♜','b':'♝','n':'♞','p':'♟'};
-let B,T='w',sel=null,moves=[],player='w',mode='bot',thinking=false,flip=0,botElo=650;
+let B,T='w',sel=null,moves=[],player='w',mode='bot',thinking=false,flip=0,botElo=2800;
 let C={wK:1,wQ:1,bK:1,bQ:1},E=null;
-let peer=null,conn=null,onlineMode=false;
 function init(){B=[['r','n','b','q','k','b','n','r'],['p','p','p','p','p','p','p','p'],['','','','','','','',''],['','','','','','','',''],['','','','','','','',''],['','','','','','','',''],['P','P','P','P','P','P','P','P'],['R','N','B','Q','K','B','N','R']];T='w';C={wK:1,wQ:1,bK:1,bQ:1};E=null;}
 function clone(b){return b.map(r=>[...r]);}
 function findKing(b,col){let k=col=='w'?'K':'k';for(let r=0;r<8;r++)for(let c=0;c<8;c++)if(b[r][c]==k)return{r,c};return null;}
@@ -13,16 +82,18 @@ function allMoves(col){let a=[];for(let r=0;r<8;r++)for(let c=0;c<8;c++){let p=B
 function inCheck(col){let k=findKing(B,col);if(!k)return false;return isAttacked(B,k.r,k.c,col=='w'?false:true);}
 function pieceVal(p){let v={p:1,n:3,b:3,r:5,q:9,k:0};return v[p.toLowerCase()]||0;}
 function evaluateBoard(b){let s=0;for(let r=0;r<8;r++)for(let c=0;c<8;c++){let p=b[r][c];if(!p)continue;let v=pieceVal(p);if(p==p.toUpperCase())s+=v;else s-=v;}return s;}
-function render(){let el=document.getElementById('board');el.innerHTML='';for(let dr=0;dr<8;dr++)for(let dc=0;dc<8;dc++){let r=flip?7-dr:dr,c=flip?7-dc:dc;let d=document.createElement('div');d.className='sq '+((r+c)%2==0?'light':'dark');if(sel&&sel.r==r&&sel.c==c)d.classList.add('sel');let mv=moves.find(x=>x.r==r&&x.c==c);if(mv){if(B[r][c]!=''||mv.E)d.classList.add('cap');else d.classList.add('hint');}let p=B[r][c];if(p){let sp=document.createElement('span');sp.className='p '+(p==p.toUpperCase()?'w':'b');sp.textContent=S[p];d.appendChild(sp);}d.onclick=()=>clickSq(r,c);el.appendChild(d);}document.getElementById('q').style.display=inCheck(T)?'block':'none';document.getElementById('turnTxt').textContent=thinking?'البوت كيفكر...':(T=='w'?'دور الأبيض':'دور الأسود');let badge={650:'500-800',950:'800-1100',1300:'1100-1500',1600:'1500-1700',1850:'1700-2000',2250:'2000-2500',2800:'2500-3000'};document.getElementById('lvlBadge').textContent=badge[botElo]||botElo;}
-function clickSq(r,c){if(thinking)return;if(onlineMode&&T!=player)return;if(!onlineMode&&mode=='bot'&&T!=player)return;let p=B[r][c];let own=p&&((T=='w'&&p==p.toUpperCase())||(T=='b'&&p==p.toLowerCase()));if(own){sel={r,c};moves=legalMoves(B,r,c);render();return;}if(sel&&moves.some(m=>m.r==r&&m.c==c)){let mm=moves.find(m=>m.r==r&&m.c==c);doMove(sel.r,sel.c,mm.r,mm.c,mm,true);sel=null;moves=[];}}
-function doMove(fr,fc,tr,tc,mm,send){let p=B[fr][fc];if(p=='K'){C.wK=0;C.wQ=0;}if(p=='k'){C.bK=0;C.bQ=0;}if(p=='R'&&fr==7&&fc==0)C.wQ=0;if(p=='R'&&fr==7&&fc==7)C.wK=0;if(p=='r'&&fr==0&&fc==0)C.bQ=0;if(p=='r'&&fr==0&&fc==7)C.bK=0;if(mm.E)B[fr][tc]='';B[tr][tc]=B[fr][fc];B[fr][fc]='';if(mm.O){if(mm.O=='K'){B[tr][tc-1]=B[tr][7];B[tr][7]='';}else{B[tr][tc+1]=B[tr][0];B[tr][0]='';}}if(B[tr][tc].toLowerCase()=='p'&&(tr==0||tr==7))B[tr][tc]=T=='w'?'Q':'q';if(mm.D)E={r:fr+(T=='w'?-1:1),c:fc};else E=null;if(onlineMode&&send&&conn&&conn.open){conn.send({type:'move',B:B.map(x=>[...x]),C:{...C},E,T:T=='w'?'b':'w'});}T=T=='w'?'b':'w';let am=allMoves(T);if(am.length==0){if(inCheck(T))alert('كش مات!');else alert('تعادل!');newGame();return;}render();if(!onlineMode&&mode=='bot')setTimeout(bot,300);}
-function bot(){try{if(onlineMode||mode!='bot')return;let am=allMoves(T);if(!am.length||T==player){thinking=false;render();return;}thinking=true;render();let blunder=0;if(botElo<=800)blunder=0.75;else if(botElo<=1100)blunder=0.55;else if(botElo<=1500)blunder=0.30;else if(botElo<=1700)blunder=0.12;else if(botElo<=2000)blunder=0.04;else if(botElo<=2500)blunder=0.01;else blunder=0;setTimeout(()=>{try{if(Math.random()<blunder){am.sort(()=>Math.random()-0.5);let m=am[0];doMove(m.fr,m.fc,m.r,m.c,m,false);thinking=false;render();return;}let scored=am.map(m=>{let nb=clone(B);if(m.E)nb[m.fr][m.c]='';nb[m.r][m.c]=nb[m.fr][m.fc];nb[m.fr][m.fc]='';if(m.O){if(m.O=='K'){nb[m.r][m.c-1]=nb[m.r][7];nb[m.r][7]='';}else{nb[m.r][m.c+1]=nb[m.r][0];nb[m.r][0]='';}}if(nb[m.r][m.c]&&nb[m.r][m.c].toLowerCase()=='p'&&(m.r==0||m.r==7))nb[m.r][m.c]=T=='w'?'Q':'q';let sc=evaluateBoard(nb);if(B[m.r][m.c]!='')sc+=(T=='w'?pieceVal(B[m.r][m.c])*0.5:-pieceVal(B[m.r][m.c])*0.5);return {m,sc};});if(T=='b')scored.sort((a,b)=>a.sc-b.sc);else scored.sort((a,b)=>b.sc-a.sc);let topN=1;if(botElo<=800)topN=8;else if(botElo<=1100)topN=6;else if(botElo<=1500)topN=4;else if(botElo<=1700)topN=3;else if(botElo<=2000)topN=2;else topN=1;let pool=scored.slice(0,Math.min(topN,scored.length));let best=pool[Math.floor(Math.random()*pool.length)].m;doMove(best.fr,best.fc,best.r,best.c,best,false);thinking=false;render();}catch(e){thinking=false;render();let m=am[0];if(m)doMove(m.fr,m.fc,m.r,m.c,m,false);}},200);}catch(e){thinking=false;render();}}
-function changeLevel(){botElo=parseInt(document.getElementById('levelSel').value);localStorage.setItem('botElo',botElo);render();newGame();}
-function createOnline(){document.getElementById('online').style.display='block';document.getElementById('onTxt').textContent='⏳ كنصايب...';if(!peer){peer=new Peer();peer.on('open',id=>{let link=location.origin+location.pathname+'?join='+id;document.getElementById('onTxt').textContent='✅ صيفط:';document.getElementById('onLink').value=link;document.getElementById('onLink').style.display='block';document.getElementById('onCopy').style.display='block';player='w';mode='online';onlineMode=true;flip=0;newGame();});peer.on('connection',c=>{conn=c;conn.on('data',d=>{if(d.type=='move'){B=d.B;C=d.C;E=d.E;T=d.T;render();}});});}}
-function copyLink(){let l=document.getElementById('onLink');l.select();document.execCommand('copy');alert('تم النسخ');}
-function setColor(c){player=c;mode='bot';flip=c=='b'?1:0;document.getElementById('cW').classList.toggle('active',c=='w');document.getElementById('cB').classList.toggle('active',c=='b');document.getElementById('c2').classList.remove('active');newGame();}
-function setMode2p(){mode='2p';flip=0;document.getElementById('c2').classList.add('active');document.getElementById('cW').classList.remove('active');document.getElementById('cB').classList.remove('active');newGame();}
-function newGame(){init();T='w';sel=null;moves=[];thinking=false;document.getElementById('q').style.display='none';render();if(!onlineMode&&mode=='bot'&&T!=player)setTimeout(bot,400);}
-(function(){let s=localStorage.getItem('botElo');if(s){botElo=parseInt(s);document.getElementById('levelSel').value=botElo;}if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js');}})();
+function render(){let boards=[document.getElementById('mainBoard'),document.getElementById('previewBoard'),document.getElementById('puzzleBoard')];boards.forEach(el=>{if(!el)return;el.innerHTML='';for(let dr=0;dr<8;dr++)for(let dc=0;dc<8;dc++){let r=flip?7-dr:dr,c=flip?7-dc:dc;let d=document.createElement('div');d.className='sq '+((r+c)%2==0?'light':'dark');if(sel&&sel.r==r&&sel.c==c)d.classList.add('sel');let mv=moves.find(x=>x.r==r&&x.c==c);if(mv){if(B[r][c]!=''||mv.E)d.classList.add('cap');else d.classList.add('hint');}let p=B[r][c];if(p){let sp=document.createElement('span');sp.className='p '+(p==p.toUpperCase()?'w':'b');sp.textContent=S[p];d.appendChild(sp);}d.onclick=()=>clickSq(r,c);el.appendChild(d);}});document.getElementById('turnTxt').textContent=thinking?'البوت كيفكر...':(T=='w'?'دور الابيض':'دور الاسود');let badge={650:'500-800',950:'800-1100',1300:'1100-1500',1600:'1500-1700',1850:'1700-2000',2250:'2000-2500',2800:'2500-3000'};document.getElementById('lvlBadge').textContent=badge[botElo]||botElo;document.getElementById('checkBadge').style.display=inCheck(T)?'block':'none';}
+function clickSq(r,c){if(thinking)return;if(mode=='bot'&&T!=player)return;let p=B[r][c];let own=p&&((T=='w'&&p==p.toUpperCase())||(T=='b'&&p==p.toLowerCase()));if(own){sel={r,c};moves=legalMoves(B,r,c);render();return;}if(sel&&moves.some(m=>m.r==r&&m.c==c)){let mm=moves.find(m=>m.r==r&&m.c==c);doMove(sel.r,sel.c,mm.r,mm.c,mm);sel=null;moves=[];}}
+function doMove(fr,fc,tr,tc,mm){let p=B[fr][fc];if(p=='K'){C.wK=0;C.wQ=0;}if(p=='k'){C.bK=0;C.bQ=0;}if(p=='R'&&fr==7&&fc==0)C.wQ=0;if(p=='R'&&fr==7&&fc==7)C.wK=0;if(p=='r'&&fr==0&&fc==0)C.bQ=0;if(p=='r'&&fr==0&&fc==7)C.bK=0;if(mm.E)B[fr][tc]='';B[tr][tc]=B[fr][fc];B[fr][fc]='';if(mm.O){if(mm.O=='K'){B[tr][tc-1]=B[tr][7];B[tr][7]='';}else{B[tr][tc+1]=B[tr][0];B[tr][0]='';}}if(B[tr][tc].toLowerCase()=='p'&&(tr==0||tr==7))B[tr][tc]=T=='w'?'Q':'q';if(mm.D)E={r:fr+(T=='w'?-1:1),c:fc};else E=null;T=T=='w'?'b':'w';let am=allMoves(T);if(am.length==0){if(inCheck(T))alert('كش مات!');else alert('تعادل!');newGame();return;}render();if(mode=='bot')setTimeout(bot,250);}
+function bot(){try{if(mode!='bot')return;let am=allMoves(T);if(!am.length||T==player){thinking=false;render();return;}thinking=true;render();let blunder=0;if(botElo<=800)blunder=0.7;else if(botElo<=1100)blunder=0.5;else if(botElo<=1500)blunder=0.25;else if(botElo<=1700)blunder=0.1;else if(botElo<=2000)blunder=0.03;else blunder=0;setTimeout(()=>{try{if(Math.random()<blunder){am.sort(()=>Math.random()-0.5);let m=am[0];doMove(m.fr,m.fc,m.r,m.c,m);thinking=false;render();return;}let scored=am.map(m=>{let nb=clone(B);if(m.E)nb[m.fr][m.c]='';nb[m.r][m.c]=nb[m.fr][m.fc];nb[m.fr][m.fc]='';let sc=evaluateBoard(nb);if(B[m.r][m.c]!='')sc+=(T=='w'?-pieceVal(B[m.r][m.c]):pieceVal(B[m.r][m.c]));return{m,sc};});if(T=='b')scored.sort((a,b)=>a.sc-b.sc);else scored.sort((a,b)=>b.sc-a.sc);let topN=botElo>=2500?1:botElo>=2000?2:botElo>=1500?3:6;let pool=scored.slice(0,topN);let best=pool[Math.floor(Math.random()*pool.length)].m;doMove(best.fr,best.fc,best.r,best.c,best);thinking=false;render();}catch(e){thinking=false;let m=am[0];if(m)doMove(m.fr,m.fc,m.r,m.c,m);}},200);}catch(e){thinking=false;}}
+function changeLevel(){botElo=parseInt(document.getElementById('levelSel').value);render();newGame();}
+function setColor(c){player=c;mode='bot';flip=c=='b'?1:0;newGame();}
+function setMode2p(){mode='2p';flip=0;newGame();}
+function newGame(){init();T='w';sel=null;moves=[];thinking=false;render();if(mode=='bot'&&T!=player)setTimeout(bot,300);}
+function setLevel(v){botElo=v;document.getElementById('levelSel').value=v;scrollToBot();render();newGame();}
+function router(id){document.querySelectorAll('.view').forEach(el=>el.classList.remove('active'));document.getElementById(id).classList.add('active');window.scrollTo(0,0);}
+function scrollToBot(){router('home');setTimeout(()=>{document.getElementById('botSection').scrollIntoView({behavior:'smooth'});},100);}
 init();render();
-</script></body></html>
+</script>
+</body>
+  </html>
